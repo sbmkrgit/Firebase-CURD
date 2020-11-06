@@ -42,6 +42,12 @@ class _HomePageState extends State<HomePage> {
           actions: <Widget>[
             RaisedButton(
               onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Cancel"),
+            ),
+            RaisedButton(
+              onPressed: () {
                 if (isUpdated) {
                   db
                       .collection('tasks')
