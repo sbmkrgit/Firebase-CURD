@@ -43,9 +43,14 @@ class _HomePageState extends State<HomePage> {
             RaisedButton(
               onPressed: () {
                 if (isUpdated) {
-                  db.collection('tasks').doc(ds.id).update({'task': task});
+                  db
+                      .collection('tasks')
+                      .doc(ds.id)
+                      .update({'task': task, 'time': DateTime.now()});
                 } else {
-                  db.collection('tasks').add({'task': task});
+                  db
+                      .collection('tasks')
+                      .add({'task': task, 'time': DateTime.now()});
                 }
                 Navigator.pop(context);
               },
@@ -70,7 +75,7 @@ class _HomePageState extends State<HomePage> {
         child: Icon(Icons.add),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: db.collection('tasks').snapshots(),
+        stream: db.collection('tasks').orderBy('time').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
