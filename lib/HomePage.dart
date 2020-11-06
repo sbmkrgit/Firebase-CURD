@@ -10,14 +10,14 @@ class _HomePageState extends State<HomePage> {
   final db = FirebaseFirestore.instance;
   String task;
 
-  void showdialog() {
+  void showdialog(bool isUpdated, DocumentSnapshot ds) {
     GlobalKey<FormState> formkey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Add ToDo"),
+          title: isUpdated ? Text("Update Todo") : Text("Add ToDo"),
           content: Form(
             key: formkey,
             autovalidate: true,
@@ -41,7 +41,14 @@ class _HomePageState extends State<HomePage> {
           ),
           actions: <Widget>[
             RaisedButton(
-              onPressed: () {},
+              onPressed: () {
+                if (isUpdated) {
+                  db.collection('tasks').doc(ds.id).update({'task': task});
+                } else {
+                  db.collection('tasks').add({'task': task});
+                }
+                Navigator.pop(context);
+              },
               child: Text("Add"),
             )
           ],
@@ -59,8 +66,43 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: showdialog,
+        onPressed: () => showdialog(false, null),
         child: Icon(Icons.add),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: db.collection('tasks').snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              itemCount: snapshot.data.docs.length,
+              itemBuilder: (context, index) {
+                DocumentSnapshot ds = snapshot.data.docs[index];
+                return Container(
+                  child: ListTile(
+                    title: Text(ds['task']),
+                    onTap: () {
+                      showdialog(true, ds);
+                    },
+                    leading: Icon(Icons.description, color: Colors.yellow),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      ),
+                      onPressed: () {
+                        db.collection('tasks').doc(ds.id).delete();
+                      },
+                    ),
+                  ),
+                );
+              },
+            );
+          } else if (snapshot.hasError) {
+            return CircularProgressIndicator();
+          } else {
+            return CircularProgressIndicator();
+          }
+        },
       ),
     ));
   }
