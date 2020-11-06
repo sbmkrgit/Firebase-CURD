@@ -7,18 +7,36 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final db = FirebaseFirestore.instance;
+  String task;
+
   void showdialog() {
+    GlobalKey<FormState> formkey = GlobalKey<FormState>();
+
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text("Add ToDo"),
           content: Form(
+            key: formkey,
+            autovalidate: true,
             child: TextFormField(
+              autofocus: true,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: "Task",
               ),
+              validator: (value) {
+                if (value.isEmpty) {
+                  return "Can't be empty";
+                } else {
+                  return null;
+                }
+              },
+              onChanged: (value) {
+                task = value;
+              },
             ),
           ),
           actions: <Widget>[
@@ -32,7 +50,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  final db = FirebaseFirestore.instance;
   @override
   Widget build(BuildContext context) {
     return SafeArea(
